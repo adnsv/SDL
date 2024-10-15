@@ -39,6 +39,9 @@
 #ifdef SDL_GDK_TEXTINPUT
 #include "../gdk/SDL_gdktextinput.h"
 #endif
+#ifdef SDL_WINDOWS_TEXTINPUT
+#include "SDL_windowstextinput.h"
+#endif
 
 // #define HIGHDPI_DEBUG
 
@@ -302,7 +305,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->HasClipboardData = WIN_HasClipboardData;
 #endif
 
-#ifdef SDL_GDK_TEXTINPUT
+#if defined(SDL_GDK_TEXTINPUT)
     GDK_EnsureHints();
 
     device->StartTextInput = GDK_StartTextInput;
@@ -314,6 +317,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;
     device->HideScreenKeyboard = GDK_HideScreenKeyboard;
     device->IsScreenKeyboardShown = GDK_IsScreenKeyboardShown;
+#elif defined(SDL_WINDOWS_TEXTINPUT)
+    device->HasScreenKeyboardSupport = WIN_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = WIN_ShowScreenKeyboard;
+    device->HideScreenKeyboard = WIN_HideScreenKeyboard;
+    device->IsScreenKeyboardShown = WIN_IsScreenKeyboardShown;
 #endif
 
     device->free = WIN_DeleteDevice;
