@@ -1892,6 +1892,9 @@ elseif(WINDOWS)
       int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
   endif()
 
+  # enable support for native windows 10+ osk
+  set(SDL_WINDOWS_TEXTINPUT 1)
+
   # headers needed elsewhere
   check_c_source_compiles("
     #define COBJMACROS

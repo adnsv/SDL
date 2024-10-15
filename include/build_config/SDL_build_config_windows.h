@@ -315,7 +315,4 @@ typedef unsigned int uintptr_t;
 #define SDL_CAMERA_DRIVER_MEDIAFOUNDATION 1
 #define SDL_CAMERA_DRIVER_DUMMY 1
 
-/* Use Windows 10+ OSK text input */
-#define SDL_WINDOWS_TEXTINPUT
-
 #endif /* SDL_build_config_windows_h_ */
