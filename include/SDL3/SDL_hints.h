@@ -407,14 +407,19 @@ extern "C" {
  * device, this hint can be used to specify a default format that will be
  * used.
  *
- * The variable can be set to the following values: - "U8": Unsigned 8-bit
- * audio - "S8": Signed 8-bit audio - "S16LE": Signed 16-bit little-endian
- * audio - "S16BE": Signed 16-bit big-endian audio - "S16": Signed 16-bit
- * native-endian audio (default) - "S32LE": Signed 32-bit little-endian audio
- * - "S32BE": Signed 32-bit big-endian audio - "S32": Signed 32-bit
- * native-endian audio - "F32LE": Floating point little-endian audio -
- * "F32BE": Floating point big-endian audio - "F32": Floating point
- * native-endian audio
+ * The variable can be set to the following values:
+ *
+ * - "U8": Unsigned 8-bit audio
+ * - "S8": Signed 8-bit audio
+ * - "S16LE": Signed 16-bit little-endian audio
+ * - "S16BE": Signed 16-bit big-endian audio
+ * - "S16": Signed 16-bit native-endian audio (default)
+ * - "S32LE": Signed 32-bit little-endian audio
+ * - "S32BE": Signed 32-bit big-endian audio
+ * - "S32": Signed 32-bit native-endian audio
+ * - "F32LE": Floating point little-endian audio
+ * - "F32BE": Floating point big-endian audio
+ * - "F32": Floating point native-endian audio
  *
  * This hint should be set before an audio device is opened.
  *
@@ -2630,6 +2635,16 @@ extern "C" {
 #define SDL_HINT_OPENGL_ES_DRIVER "SDL_OPENGL_ES_DRIVER"
 
 /**
+ * Mechanism to specify openvr_api library location
+ *
+ * By default, when using the OpenVR driver, it will search for the API
+ * library in the current folder. But, if you wish to use a system API you can
+ * specify that by using this hint. This should be the full or relative path
+ * to a .dll on Windows or .so on Linux.
+ */
+#define SDL_HINT_OPENVR_LIBRARY              "SDL_OPENVR_LIBRARY"
+
+/**
  * A variable controlling which orientations are allowed on iOS/Android.
  *
  * In some circumstances it is necessary to be able to explicitly control
@@ -3130,6 +3145,31 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VIDEO_ALLOW_SCREENSAVER "SDL_VIDEO_ALLOW_SCREENSAVER"
+
+/**
+ * A comma separated list containing the names of the displays that SDL should
+ * sort to the front of the display list.
+ *
+ * When this hint is set, displays with matching name strings will be
+ * prioritized in the list of displays, as exposed by calling
+ * SDL_GetDisplays(), with the first listed becoming the primary display. The
+ * naming convention can vary depending on the environment, but it is usually
+ * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-A-1',etc...).
+ *
+ * On Wayland and X11 desktops, the connector names associated with displays
+ * can typically be found by using the `xrandr` utility.
+ *
+ * This hint is currently supported on the following drivers:
+ *
+ * - KMSDRM (kmsdrm)
+ * - Wayland (wayland)
+ * - X11 (x11)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.1.5.
+ */
+#define SDL_HINT_VIDEO_DISPLAY_PRIORITY "SDL_VIDEO_DISPLAY_PRIORITY"
 
 /**
  * Tell the video driver that we only want a double buffer.
