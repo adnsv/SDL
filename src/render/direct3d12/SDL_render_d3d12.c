@@ -414,6 +414,7 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
                 D3D_SAFE_RELEASE(data->pipelineStates[i].pipelineState);
             }
             SDL_free(data->pipelineStates);
+            data->pipelineStates = NULL;
             data->pipelineStateCount = 0;
         }
 
@@ -1337,12 +1338,14 @@ D3D12_HandleDeviceLost(SDL_Renderer *renderer)
     result = D3D12_CreateDeviceResources(renderer);
     if (FAILED(result)) {
         // D3D12_CreateDeviceResources will set the SDL error
+        D3D12_ReleaseAll(renderer);
         return result;
     }
 
     result = D3D12_UpdateForWindowSizeChange(renderer);
     if (FAILED(result)) {
         // D3D12_UpdateForWindowSizeChange will set the SDL error
+        D3D12_ReleaseAll(renderer);
         return result;
     }
 
@@ -2738,6 +2741,10 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     D3D12_CPU_DESCRIPTOR_HANDLE *textureSampler;
     D3D12_PixelShaderConstants constants;
 
+    if (!textureData) {
+        return SDL_SetError("Texture is not currently available");
+    }
+
     D3D12_SetupShaderConstants(renderer, cmd, texture, &constants);
 
     switch (textureData->scaleMode) {
@@ -2824,6 +2831,10 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     const int viewportRotation = D3D12_GetRotationForCurrentRenderTarget(renderer);
+
+    if (!rendererData->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
 
     if (rendererData->pixelSizeChanged) {
         D3D12_UpdateForWindowSizeChange(renderer);
@@ -3108,6 +3119,10 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     HRESULT result;
 
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
     // Transition the render target to present state
     D3D12_TransitionResource(data,
                              data->renderTargets[data->currentBackBufferIndex],
@@ -3132,10 +3147,15 @@ static bool D3D12_RenderPresent(SDL_Renderer *renderer)
          * must recreate all device resources.
          */
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
-            D3D12_HandleDeviceLost(renderer);
+            if (SUCCEEDED(D3D12_HandleDeviceLost(renderer))) {
+                SDL_SetError("Present failed, device lost");
+            } else {
+                // Recovering from device lost failed, error is already set
+            }
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D12_CreateWindowSizeDependentResources(renderer);
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }
